@@ -1,10 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
 
-# Render uses an environment variable for the database path, or falls back to local sqlite
+# --- CLOUDINARY CONFIGURATION ---
+cloudinary.config( 
+  cloud_name = "YOUR_CLOUD_NAME", 
+  api_key = "YOUR_API_KEY", 
+  api_secret = "YOUR_API_SECRET" 
+)
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'database.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -18,7 +26,7 @@ class Book(db.Model):
     edition = db.Column(db.String(100))
     publisher = db.Column(db.String(200))
     pub_year = db.Column(db.String(20))
-    cover_image_url = db.Column(db.String(500)) # Changed to URL for permanent live storage
+    cover_url = db.Column(db.String(500)) 
     quotes = db.relationship('Quote', backref='book', lazy=True, cascade="all, delete-orphan")
 
 class Quote(db.Model):
@@ -38,15 +46,30 @@ def index():
 
 @app.route('/add_book', methods=['POST'])
 def add_book():
+    file = request.files.get('cover_file')
+    image_url = ""
+    
+    if file:
+        # Uploads your local file directly to the cloud
+        upload_result = cloudinary.uploader.upload(file)
+        image_url = upload_result['secure_url']
+    
     new_book = Book(
         title=request.form.get('title'),
         authors=request.form.get('authors'),
         edition=request.form.get('edition'),
         publisher=request.form.get('publisher'),
         pub_year=request.form.get('pub_year'),
-        cover_image_url=request.form.get('cover_url') # Accepts URL now
+        cover_url=image_url
     )
     db.session.add(new_book)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/delete_book/<int:book_id>', methods=['POST'])
+def delete_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    db.session.delete(book)
     db.session.commit()
     return redirect(url_for('index'))
 
@@ -68,6 +91,5 @@ def add_quote(book_id):
     return redirect(url_for('book_detail', book_id=book_id))
 
 if __name__ == '__main__':
-    # Use environment port for Render
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
