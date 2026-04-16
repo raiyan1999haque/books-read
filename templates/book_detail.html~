@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ book.title }}</title>
+    <style>
+        body { font-family: 'Georgia', serif; background: #fdfcf0; padding: 40px; }
+        .container { max-width: 800px; margin: auto; }
+        .quote-entry { background: white; padding: 20px; border-left: 5px solid #3498db; margin-bottom: 20px; border-radius: 4px; }
+        .quote-text { font-style: italic; font-size: 1.1em; white-space: pre-wrap; }
+        .location { color: #e67e22; font-weight: bold; margin: 10px 0; display: block; }
+        .personal-note { background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 0.9em; margin-top: 10px; border-top: 1px solid #eee; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-family: inherit; }
+        .btn { background: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/">← Back to Library</a>
+        <h1>{{ book.title }}</h1>
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h3>New Entry</h3>
+            <form action="/book/{{ book.id }}/add_quote" method="post">
+                <textarea name="content" placeholder="Paste the quotation/section here..." rows="4" required></textarea>
+                <input type="text" name="location" placeholder="Address (Page/Chapter)" style="width: 100%; padding: 10px; margin-bottom:10px; box-sizing: border-box;">
+                <textarea name="personal_note" placeholder="Your thoughts..." rows="3"></textarea>
+                <button type="submit" class="btn">Save to Log</button>
+            </form>
+        </div>
+        <div id="log">
+            {% for quote in book.quotes|reverse %}
+            <div class="quote-entry">
+                <div class="quote-text">"{{ quote.content }}"</div>
+                <span class="location">📍 {{ quote.location }}</span>
+                {% if quote.personal_note %}
+                <div class="personal-note"><strong>Note:</strong> {{ quote.personal_note }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

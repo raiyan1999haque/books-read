@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Library</title>
+    <style>
+        body { font-family: 'Georgia', serif; background: #fdfcf0; padding: 40px; color: #2c3e50; }
+        .container { max-width: 900px; margin: auto; }
+        .add-book-form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 30px; }
+        .book-card { text-align: center; cursor: pointer; transition: 0.3s; background: white; padding: 10px; border-radius: 5px; }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .book-card img { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; }
+        input, button { padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #27ae60; color: white; cursor: pointer; font-weight: bold; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 My Reading Log</h1>
+        <div class="add-book-form">
+            <form action="/add_book" method="post" enctype="multipart/form-data">
+                <input type="text" name="title" placeholder="Book Title" required>
+                <input type="file" name="cover" accept="image/*">
+                <button type="submit">Add Book</button>
+            </form>
+        </div>
+        <div class="shelf">
+            {% for book in books %}
+            <div class="book-card" onclick="window.location.href='/book/{{ book.id }}'">
+                {% if book.cover_image %}
+                <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}">
+                {% else %}
+                <div style="height:250px; background:#eee; display:flex; align-items:center; justify-content:center;">No Cover</div>
+                {% endif %}
+                <p><strong>{{ book.title }}</strong></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

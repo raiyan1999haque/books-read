@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Library</title>
+    <style>
+        body { font-family: 'Georgia', serif; background: #fdfcf0; padding: 40px; color: #2c3e50; }
+        .container { max-width: 1000px; margin: auto; }
+        .add-book-form { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
+        .book-card { text-align: center; cursor: pointer; transition: 0.3s; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .book-card img { width: 100%; height: 280px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+        input, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .full-width { grid-column: span 2; }
+        button { background: #27ae60; color: white; cursor: pointer; font-weight: bold; border: none; margin-top: 10px; }
+        .book-card p { margin: 5px 0; font-size: 0.9em; color: #7f8c8d; }
+        .book-title { color: #2c3e50; font-size: 1.1em; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 My Research Library</h1>
+        <div class="add-book-form">
+            <form action="/add_book" method="post" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <input type="text" name="title" placeholder="Book Title" class="full-width" required>
+                    <input type="text" name="authors" placeholder="Author(s)" required>
+                    <input type="text" name="edition" placeholder="Edition (e.g. 2nd Ed.)">
+                    <input type="text" name="publisher" placeholder="Publisher">
+                    <input type="text" name="pub_year" placeholder="Year of Publication">
+                    <div class="full-width">
+                        <label style="font-size: 0.8em;">Cover Image:</label>
+                        <input type="file" name="cover" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit">Add Book to Library</button>
+            </form>
+        </div>
+        <div class="shelf">
+            {% for book in books %}
+            <div class="book-card" onclick="window.location.href='/book/{{ book.id }}'">
+                {% if book.cover_image %}
+                <img src="{{ url_for('static', filename='uploads/' + book.cover_image) }}">
+                {% else %}
+                <div style="height:280px; background:#eee; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">No Cover</div>
+                {% endif %}
+                <div class="book-title">{{ book.title }}</div>
+                <p>{{ book.authors }}</p>
+                <p>{{ book.pub_year }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
