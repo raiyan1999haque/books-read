@@ -1,56 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ book.title }}</title>
+    <meta charset="UTF-8">
+    <title>{{ book.title }} - Notes</title>
     <style>
-        body { font-family: 'Georgia', serif; background: #fdfcf0; padding: 40px; color: #2c3e50; }
-        .container { max-width: 800px; margin: auto; }
-        .meta-section { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-bottom: 4px solid #27ae60; }
-        .meta-section h1 { margin-top: 0; }
-        .meta-info { font-size: 0.95em; color: #555; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .quote-entry { background: white; padding: 20px; border-left: 5px solid #3498db; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .quote-text { font-style: italic; font-size: 1.1em; white-space: pre-wrap; }
-        .location { color: #e67e22; font-weight: bold; margin: 10px 0; display: block; font-size: 0.9em; }
-        .personal-note { background: #f9f9f9; padding: 15px; border-radius: 4px; font-size: 0.9em; margin-top: 10px; border-top: 1px dotted #ccc; }
-        textarea, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-family: inherit; box-sizing: border-box; }
-        .btn { background: #3498db; color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        :root { --paper: #fdfcf0; --ink: #2c3e50; --accent: #3498db; }
+        body { font-family: 'Georgia', serif; background: var(--paper); padding: 40px; color: var(--ink); line-height: 1.6; }
+        .container { max-width: 850px; margin: auto; }
+        .back-nav { text-decoration: none; color: #7f8c8d; font-size: 14px; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        
+        /* Book Meta Header */
+        .book-header { background: white; padding: 30px; border-radius: 8px; border-left: 8px solid #27ae60; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .book-header h1 { margin: 0 0 15px 0; font-size: 2.2em; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95em; color: #555; }
+
+        /* Entry Form */
+        .entry-form { background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 40px; border: 1px solid #eee; }
+        textarea, input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .submit-btn { background: var(--accent); color: white; border: none; padding: 12px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        /* Quote Display */
+        .quote-box { background: white; padding: 25px; border-radius: 8px; margin-bottom: 25px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .quote-box::before { content: '“'; position: absolute; left: 10px; top: 0; font-size: 4em; color: #eee; font-family: serif; }
+        .content { font-style: italic; font-size: 1.15em; color: #34495e; white-space: pre-wrap; margin-bottom: 15px; position: relative; }
+        .loc-tag { background: #e67e22; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+        .note { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 4px; border-top: 1px solid #eee; font-size: 0.95em; color: #666; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="/" style="text-decoration: none; color: #7f8c8d;">← Back to Shelf</a>
-        
-        <div class="meta-section">
-            <h1>{{ book.title }}</h1>
-            <div class="meta-info">
-                <div><strong>Author(s):</strong> {{ book.authors }}</div>
-                <div><strong>Edition:</strong> {{ book.edition or 'N/A' }}</div>
-                <div><strong>Publisher:</strong> {{ book.publisher or 'N/A' }}</div>
-                <div><strong>Year:</strong> {{ book.pub_year or 'N/A' }}</div>
-            </div>
-        </div>
 
-        <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
-            <h3>Add New Quote/Note</h3>
-            <form action="/book/{{ book.id }}/add_quote" method="post">
-                <textarea name="content" placeholder="Paste the quotation or book section here..." rows="5" required></textarea>
-                <input type="text" name="location" placeholder="Address (e.g., Page 124 or Chapter 5.2)">
-                <textarea name="personal_note" placeholder="Your reflections or comments..."></textarea>
-                <button type="submit" class="btn">Add to Log</button>
-            </form>
-        </div>
+<div class="container">
+    <a href="/" class="back-nav">← RETURN TO SHELF</a>
 
-        <div id="log">
-            {% for quote in book.quotes|reverse %}
-            <div class="quote-entry">
-                <div class="quote-text">"{{ quote.content }}"</div>
-                <span class="location">📍 {{ quote.location }}</span>
-                {% if quote.personal_note %}
-                <div class="personal-note"><strong>Personal Note:</strong> {{ quote.personal_note }}</div>
-                {% endif %}
-            </div>
-            {% endfor %}
+    <div class="book-header">
+        <h1>{{ book.title }}</h1>
+        <div class="meta-grid">
+            <div><strong>Author(s):</strong> {{ book.authors }}</div>
+            <div><strong>Edition:</strong> {{ book.edition or 'Standard' }}</div>
+            <div><strong>Publisher:</strong> {{ book.publisher or 'Not Specified' }}</div>
+            <div><strong>Year:</strong> {{ book.pub_year or 'Unknown' }}</div>
         </div>
     </div>
+
+    <div class="entry-form">
+        <h3>New Citation/Reflection</h3>
+        <form action="/book/{{ book.id }}/add_quote" method="post">
+            <textarea name="content" placeholder="Paste the text from the book here..." rows="5" required></textarea>
+            <input type="text" name="location" placeholder="Address (e.g., Page 210, Chapter 4)">
+            <textarea name="personal_note" placeholder="Your interpretation or comments..." rows="3"></textarea>
+            <button type="submit" class="submit-btn">Record Entry</button>
+        </form>
+    </div>
+
+    <div id="entries">
+        {% for quote in book.quotes|reverse %}
+        <div class="quote-box">
+            <div class="content">{{ quote.content }}</div>
+            <span class="loc-tag">📍 {{ quote.location or 'No Address' }}</span>
+            {% if quote.personal_note %}
+            <div class="note">
+                <strong>Commentary:</strong><br>
+                {{ quote.personal_note }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 </body>
 </html>

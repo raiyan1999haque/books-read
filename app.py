@@ -1,17 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 import os
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
+# Render uses an environment variable for the database path, or falls back to local sqlite
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'database.db')
-app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -20,7 +18,7 @@ class Book(db.Model):
     edition = db.Column(db.String(100))
     publisher = db.Column(db.String(200))
     pub_year = db.Column(db.String(20))
-    cover_image = db.Column(db.String(200))
+    cover_image_url = db.Column(db.String(500)) # Changed to URL for permanent live storage
     quotes = db.relationship('Quote', backref='book', lazy=True, cascade="all, delete-orphan")
 
 class Quote(db.Model):
@@ -40,19 +38,13 @@ def index():
 
 @app.route('/add_book', methods=['POST'])
 def add_book():
-    file = request.files.get('cover')
-    filename = None
-    if file and file.filename != '':
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    
     new_book = Book(
         title=request.form.get('title'),
         authors=request.form.get('authors'),
         edition=request.form.get('edition'),
         publisher=request.form.get('publisher'),
         pub_year=request.form.get('pub_year'),
-        cover_image=filename
+        cover_image_url=request.form.get('cover_url') # Accepts URL now
     )
     db.session.add(new_book)
     db.session.commit()
@@ -76,4 +68,6 @@ def add_quote(book_id):
     return redirect(url_for('book_detail', book_id=book_id))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8001)
+    # Use environment port for Render
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host='0.0.0.0', port=port)
